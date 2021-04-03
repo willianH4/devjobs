@@ -7,5 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Candidato extends Model
 {
-    use HasFactory;
+    // Agregar al fillable todo lo que espera la segunda forma de guardar en el controlador
+    protected $fillable = [
+        'nombre', 'email', 'cv', 'vacante_id'
+    ];
+
 }

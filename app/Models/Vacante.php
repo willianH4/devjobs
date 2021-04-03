@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\User;
 use App\Models\Salario;
+use App\Models\Candidato;
 use App\Models\Categoria;
 use App\Models\Ubicacion;
 use App\Models\Experiencia;
@@ -44,5 +45,12 @@ class Vacante extends Model
     public function reclutador()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    // forma 4 de guardar atraves de una relacion 1:n (de uno a mucho)
+    // una vacante tiene muchos candidatos
+    public function candidatos()
+    {
+        return $this->hasMany(Candidato::class);
     }
 }
