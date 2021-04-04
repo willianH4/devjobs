@@ -31,6 +31,19 @@ export default {
             } else {
                 this.estadoVacanteData = 1;
             }
+
+            // Enviar la peticion a axios
+            const params = {
+                estado: this.estadoVacanteData
+            }
+            axios
+                .post('/vacantes/' + this.vacanteId, params)
+                .then((result) => {
+                console.log(result)                
+                }).catch((err) => {
+                    console.log(err)
+                });
+            
         }
     },
     computed: {
