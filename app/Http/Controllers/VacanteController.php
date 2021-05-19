@@ -26,7 +26,7 @@ class VacanteController extends Controller
         // $vacantes = Auth::user()->vacantes;
 
         // Segunda forma
-        $vacantes = Vacante::where('user_id', auth()->user()->id )->simplePaginate(10);
+        $vacantes = Vacante::where('user_id', auth()->user()->id )->latest()->simplePaginate(10);
         
         return view('vacantes.index', compact('vacantes'));
     }
@@ -84,18 +84,64 @@ class VacanteController extends Controller
    
     public function edit(Vacante $vacante)
     {
-        //
+        // Agregamos el Policy
+        $this->authorize('view', $vacante);
+
+        // consultas
+        $categoria = Categoria::all();
+        $experiencia = Experiencia::all();
+        $ubicacion = Ubicacion::all();
+        $salario = Salario::all();
+        
+        return view('vacantes.edit')->with('categorias', $categoria)
+        ->with('experiencias', $experiencia)
+        ->with('ubicaciones', $ubicacion)
+        ->with('salarios', $salario)
+        ->with('vacante', $vacante);
     }
 
    
     public function update(Request $request, Vacante $vacante)
     {
-        //
+
+        // Agregamos el Policy
+        $this->authorize('update', $vacante);
+
+        // dd($request->all());
+        // validacion
+        $data = $request->validate([
+            'titulo' => 'required|min:10',
+            'categoria' => 'required',
+            'experiencia' => 'required',
+            'ubicacion' => 'required',
+            'salario' => 'required',
+            'descripcion' => 'required|min:30',
+            'imagen' => 'required',
+            'skills' => 'required'
+        ]);
+
+        // recorre cada registro para ser guardado
+        $vacante->titulo = $data['titulo'];
+        $vacante->skills = $data['skills'];
+        $vacante->imagen = $data['imagen'];
+        $vacante->descripcion = $data["descripcion"];
+        $vacante->categoria_id = $data['categoria'];
+        $vacante->experiencia_id = $data['experiencia'];
+        $vacante->ubicacion_id = $data['ubicacion'];
+        $vacante->salario_id = $data['salario'];
+
+        $vacante->save();
+
+        // Redireccionar
+        return redirect()->action([VacanteController::class, 'index']);
     }
 
    
     public function destroy(Vacante $vacante)
     {
+        // Agregamos el Policy
+        $this->authorize('delete', $vacante);
+
         // return response()->json($vacante, 200);
 
         $vacante->delete();
@@ -135,5 +181,40 @@ class VacanteController extends Controller
         $vacante->save();
 
         return response()->json($vacante);
+    }
+
+    public function buscar(Request $request)
+    {
+        // dd($request->all());
+        // return "Buscando...";
+        // Validacion
+        $data = $request->validate([
+            'categoria' => 'required',
+            'ubicacion' => 'required'
+        ]);
+
+        // Asignar valores
+        $categoria = $data['categoria'];
+        $ubicacion = $data['ubicacion'];
+
+        // Forma 1 de condicionar la busqueda por categoriaID y UbicacionID
+        $vacantes = Vacante::latest()
+            ->where('categoria_id', $categoria)
+            ->where('ubicacion_id', $ubicacion)
+            ->get();
+            // orWhere se usa para filtrar como el operador OR
+
+        // Forma 2
+        $vacantes = Vacante::where([
+            'categoria_id' => $categoria,
+            'ubicacion_id' => $ubicacion
+        ])->get();
+        
+        return view('buscar.index', compact('vacantes'));
+    }
+
+    public function resultados()
+    {
+        return "Desde resultados";
     }
 }
